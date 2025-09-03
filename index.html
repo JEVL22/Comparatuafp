@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Comparador AFP Perú – Flip</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="preload" href="assets/fonts/OakesGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Metropolis-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Metropolis-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Metropolis-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
+
+  <style>
+.p-center {
+  justify-self: center;   /* funciona en grid */
+  text-align: center;     /* centra el contenido en cualquier layout */
+  margin-inline: auto;    /* centra el bloque en flow/flex */
+}
+    @font-face{
+  font-family: "Oakes Grotesk";
+  src: url("assets/fonts/OakesGrotesk-Variable.woff2") format("woff2-variations");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face{
+  font-family: "Metropolis";
+  src: url("assets/fonts/Metropolis-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face{
+  font-family: "Metropolis";
+  src: url("assets/fonts/Metropolis-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face{
+  font-family: "Metropolis";
+  src: url("assets/fonts/Metropolis-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 400px; /* tamaño en escritorio */
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    height: 450px; /* tamaño reducido en celular */
+  }
+}
+    :root{
+      --flip-teal:#1d7a74;
+      --flip-dark-teal:#0e4c48;
+      --flip-sage:#7C9856;
+      --flip-mint:#78c7b1;
+      --flip-lime:#b4d455;
+      --flip-light-green:#e7f3e9;
+      --bg:#f9fafb;
+      --text:#0f172a;
+      --muted:#6b7280;
+      --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+      --radius: 16px;
+      --container: 1120px;
+      --flip-border:#78935233;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+   body{
+  margin:0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: "Oakes Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+  color:var(--flip-sage);
+  background:var(--bg);
+  line-height:1.5;
+}
+
+    .page{min-height:100vh; display:flex; flex-direction:column;}
+    .container{max-width:var(--container); margin-inline:auto; padding: 0 24px;}
+    header{padding:8px 0;} 
+    .hero{
+      display:grid;
+      gap:48px;
+      align-items:center;
+    }
+    @media (min-width:1024px){
+      .hero{
+        grid-template-columns: 1fr 1fr;
+        gap:48px;
+      }
+    }
+    h1{
+      font-size: clamp(32px, 4vw, 56px);
+      line-height:1.1;
+      margin:0 0 16px 0;
+      text-align: center;
+    }
+h2{
+  font-family: "Metropolis", "Oakes Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+  font-weight: 800;           /* usa 800 si tienes ExtraBold; si no, baja a 700 */
+  font-size: clamp(24px, 3vw, 32px);
+  color:var(--flip-dark-teal);
+  margin:0 0 8px 0;
+  justify-self: center;
+}
+    .lead{font-size:18px; color:var(--muted); max-width: 56ch;}
+    .flip-teal{color:var(--flip-teal)}
+    .flip-sage{color:var(--flip-sage)}
+    .flip-dark{color:var(--flip-dark-teal)}
+    .legend{
+      display:flex; flex-wrap:wrap; gap:16px; margin-top:20px; color:var(--flip-sage); font-size:14px;
+    }
+    .legend .item{display:flex; align-items:center; gap:8px;}
+    .dot{width:12px; height:12px; border-radius:999px; display:inline-block}
+    .dot.sage{background:var(--flip-sage)}
+    .dot.mint{background:var(--flip-mint)}
+    .dot.teal{background:var(--flip-teal)}
+    .dot.lime{background:var(--flip-lime)}
+    .hero-figure{position:relative;}
+    .hero-img{
+      width:100%; height:auto; border-radius:20px; box-shadow: var(--shadow); display:block;
+    }
+    .section{margin-top:64px;}
+    .section .intro{ text-align:center; margin-bottom:32px;}
+    .intro p{ color:var(--muted); max-width: 70ch; margin: 0 auto;}
+    .card{
+      max-width: 960px; margin: 0 auto;
+      background:#fff; border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 24px;
+      border:2px solid var(--flip-sage);
+    }
+    .card {
+  border: none;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.card:hover { 
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(16,24,40,.12);
+}
+    .form-grid{
+      display:grid; gap:16px;
+    }
+    @media (min-width:768px){
+      .form-grid{grid-template-columns: repeat(3, 1fr);}
+      .form-grid .wide{grid-column: span 1;}
+    }
+    label{font-size:14px; color:#334155; display:block; margin-bottom:6px;}
+    select, input{
+      width:100%; height:44px; padding: 0 12px;
+      border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:var(--text);
+      outline: none;
+    }
+    select:focus, input:focus{border-color: var(--flip-teal); box-shadow: 0 0 0 4px rgba(29,122,116,0.12);}
+    
+    .kpis{
+      margin-top:77px; display:grid; grid-template-columns:1fr; gap:12px
+    }
+    @media (min-width:850px){ .kpis{ grid-template-columns:repeat(3,1fr) } }
+    .kpi{
+      text-align:center; padding:16px; background:var(--flip-light-green); border-radius:14px; border:1px solid var(--flip-border)
+    }
+    .kpi h4{ margin:0 0 6px; color:var(--flip-dark-teal) }
+    .kpi .value{ font-weight:800; font-size:26px; color:var(--flip-sage) }
+    .kpi .pct{ font-size:13px; color:var(--flip-sage) }
+    .disclaimer{
+      margin-top:18px; padding:14px; background:color-mix(in srgb, var(--flip-teal) 10%, #0000000f);  
+      border-radius:12px; border:1px dashed var(--flip-border); text-align:center; font-size:13px
+    }
+    .legend-dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:baseline }
+    .footer{
+      margin-top:32px; /* <--- Reducido de 80px a 32px */
+      text-align:center;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 20px;
+      background:var(--flip-light-green); border-radius:999px; color:var(--flip-dark-teal);
+      font-weight:600;
+    }
+    .logo-header {
+      display:inline-block;  width: clamp(160px, 20vw, 240px);  height:auto; 
+    }
+    .logo-header {
+  display: inline-block;
+  padding: 10px;
+}
+h1, h2, h3 { letter-spacing: -0.5px; }
+.lead { font-size: 17px; line-height: 1.6; color: var(--muted); }
+    .logo-header img {
+      display:block;
+      width:100%;
+      height:auto;
+    }
+    .logo-footer {
+      display:inline-block; width:84px; height:auto;
+      vertical-align:middle;
+    }
+    .logo-footer img {
+      display:block;
+      width:100%;
+      height:auto;
+    }
+.cta-buttons {
+  margin: 24px 0;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+  .rent-title {
+    margin-top: 130px !important;
+  }
+  .rentabilidades,
+  .calc-container,
+  .cta-buttons,
+  .kpis,
+  .disclaimer {
+    margin-top: 32px !important;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #7C9856;
+  text-decoration: none;
+  color: #ffffff;
+  border: 2px solid #7C9856;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(116,142,84,.25);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.btn:active {
+  transform: scale(.98);
+}
+.btn.white {
+  background: #fff;
+  color: var(--text);
+  border: 2px solid #7C9856;
+}
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-family: sans-serif;
+      justify-content: space-evenly;
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  width: 38px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 20px;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.slider::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+}
+
+/* ✅ Activado */
+.switch input:checked + .slider {
+  background-color: #7C9856;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+/* ✅ Deshabilitado (EEUU fijo) */
+.switch input:disabled + .slider {
+  background-color: #7C9856;
+  cursor: not-allowed;
+}
+
+.switch input:disabled ~ .label-text {
+  opacity: 0.6;
+}
+.chart-wrap {
+  width: 100%;
+  height: 400px; /* fija el alto */
+  
+}
+
+@media (max-width: 768px) {
+  .chart-wrap {
+    height: 450px; /* más alto en móvil */
+  }
+}
+.label-text {
+  font-size: 14px;
+  font-weight: bold;
+  color: #0f172a;
+}
+.rentabilidades {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 40px auto 0; /* 👈 más espacio arriba */
+  max-width: 600px; /* 👈 centra y evita que se estiren demasiado */
+}
+
+.rentabilidades .card {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.rentabilidades .card:hover {
+  transform: translateY(-3px);
+}
+
+.rentabilidades .label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.rentabilidades .valor {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Colores */
+.rentabilidades .habitat .valor { color: #c02c39; }
+.rentabilidades .integra .valor { color: #1d49a7; }
+.rentabilidades .prima .valor { color: #f7cf2e; }
+.rentabilidades .profuturo .valor { color: #797166; }
+.rentabilidades .eeuu .valor { color: #7C9856; }
+.rentabilidades .promedios .valor { color: #b05138; }
+
+.rent-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 50px 0 20px; /* espacio antes y después */
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+
+/* 📱 Responsive: en móviles que ocupen 2 columna */
+@media (max-width: 640px) {
+  .rentabilidades {
+    grid-template-columns: repeat(2,2fr);
+    max-width: 100%;
+  }
+}
+.calc-container {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.calc-container h3 {
+  margin-bottom: 15px;
+  color: #7C9856;
+}
+.calc-container input, .calc-container select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+.calc-container button {
+  background: #7C9856;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.calc-container button:hover {
+  background: #5f7440;
+}
+#resultados {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #0f172a;
+}
+@media (max-width: 375px), (max-width: 425px), (max-width: 320px), (max-width: 824px) {
+  .container {
+    padding: 0 2vw;
+    max-width: 100vw;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .hero-img {
+    border-radius: 10px;
+    box-shadow: none;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 16px;
+  }
+  .card {
+    padding: 16px;
+    max-width: 100vw;
+    margin-bottom: 18px;
+  }
+  .chart-wrap, .chart-container {
+    width: 100vw;
+    min-width: 0;
+    height: 220px;
+    padding: 0;
+    margin-left: -8px;
+    margin-bottom: 18px;
+  }
+  .kpis {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+  }
+  .kpi {
+    padding: 10px;
+    font-size: 13px;
+  }
+  .footer {
+    margin-top: 18px;
+    font-size: 11px;
+  }
+  .badge {
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  .logo-header, .logo-footer {
+    width: 70px;
+  }
+  h1 {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+  .lead {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .rent-title {
+    font-size: 15px;
+    margin-top: 120px !important;
+    margin-bottom: 18px !important;
+  }
+  .rentabilidades {
+    grid-template-columns: repeat(2, 2fr);
+    gap: 14px;
+    margin-top: 18px;
+    margin-bottom: 18px;
+    max-width: 100vw;
+  }
+  .rentabilidades .card {
+    padding: 10px;
+    font-size: 13px;
+  }
+  .calc-container {
+    margin-top: 18px;
+    padding: 14px;
+    max-width: 98vw;
+    margin-bottom: 18px;
+  }
+  .calc-container h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+  .calc-container input, .calc-container select {
+    padding: 7px;
+    margin: 7px 0;
+    font-size: 13px;
+  }
+  .calc-container button {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+  #resultados {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .disclaimer {
+    font-size: 11px;
+    margin-top: 12px !important;
+    margin-bottom: 14px;
+    padding: 8px;
+  }
+  .cta-buttons {
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .filtros {
+    gap: 8px;
+    margin-bottom: 14px;
+    margin-top: 8px;
+  }
+  .switch .label-text {
+    font-size: 12px;
+  }
+}
+@media (max-width: 824px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .card,
+  .calc-container,
+  .rentabilidades {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+  .chart-wrap, .chart-container {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    box-sizing: border-box;
+  }
+}
+@media (max-width: 1024px) and (min-width: 768px) {
+  .container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .hero {
+    gap: 28px;
+  }
+  .hero-img {
+    max-width: 340px;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(16,24,40,0.08);
+    margin: 0 auto;
+    display: block;
+  }
+  h1 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+  .lead {
+    font-size: 15px;
+    max-width: 90vw;
+    margin-bottom: 10px;
+  }
+  .card {
+    padding: 18px;
+  }
+  .chart-wrap, .chart-container {
+    height: 320px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .rent-title {
+    font-size: 17px;
+    margin-top: 60px !important;
+    margin-bottom: 12px !important;
+  }
+  .rentabilidades .label {
+    font-size: 13px;
+  }
+  .rentabilidades .valor {
+    font-size: 15px;
+  }
+  .calc-container {
+    padding: 12px;
+    font-size: 14px;
+  }
+  .calc-container h3 {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .calc-container input, .calc-container select {
+    font-size: 14px;
+    padding: 8px;
+  }
+  .calc-container button {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+  #resultados {
+    font-size: 14px;
+  }
+  .kpi {
+    font-size: 14px;
+    padding: 10px;
+  }
+  .disclaimer {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .btn {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+  .logo-header, .logo-footer {
+    width: 90px;
+  }
+}
+/* Centrar el bloque del héroe y sus textos */
+.hero { 
+  justify-items: center;          /* centra los hijos en el grid */
+}
+.hero > div {
+  grid-column: 1 / -1;            /* que el texto ocupe todo el ancho del grid */
+  text-align: center;             /* centra el h1 y cualquier texto dentro */
+}
+.lead {
+  text-align: center;             /* centra el párrafo “Compara el rendimiento...” */
+  margin-inline: auto;            /* centra el bloque y respeta el max-width */
+}
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <main>
+      <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+          <div>
+            <h1>
+              <span class="flip-teal">¿Cómo van</span><br />
+              <span class="flip-sage">las AFPs</span><br />
+              <span class="flip-dark">en Perú?</span>
+            </h1>
+            <p class="lead">
+              Compara el rendimiento de las diferentes AFPs peruanas con invertir en EE.UU.
+            </p>
+          </div>
+        </section>
+        <!-- Comparator Section -->
+        <section class="section">
+          <div class="card">
+          <div class="card-header">
+  <h1 class="title">Comparación de Rendimientos</h1>
+  <h2  class="title">Fondo 3 de AFPs vs EE.UU</h2>
+  <div class="spacer" style="height: 24px;"></div>
+</div>
+<div class="card-content">
+  <div class="chart-wrap">
+<div id="filtros" class="filtros">
+  <label class="switch">
+    <input type="checkbox" value="Habitat">
+    <span class="slider"></span>
+    <span class="label-text">Habitat</span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" value="Integra">
+    <span class="slider"></span>
+    <span class="label-text">Integra</span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" value="Prima">
+    <span class="slider"></span>
+    <span class="label-text">Prima</span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" value="Profuturo">
+    <span class="slider"></span>
+    <span class="label-text">Profuturo</span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" value="EEUU" checked disabled>
+    <span class="slider"></span>
+    <span class="label-text">EE.UU</span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" value="Promedio AFPs" checked>
+    <span class="slider"></span>
+    <span class="label-text">Promedio AFPs</span>
+  </label>
+</div>
+    <canvas id="chart"></canvas>
+  </div>
+  <h3 class="rent-title">Rentabilidades Anuales</h3>
+<div class="rentabilidades">
+  <div class="card habitat">
+    <span class="label">Habitat</span>
+    <span class="valor">3.62%</span>
+  </div>
+  <div class="card integra">
+    <span class="label">Integra</span>
+    <span class="valor">1.69%</span>
+  </div>
+  <div class="card prima">
+    <span class="label">Prima</span>
+    <span class="valor">0.63%</span>
+  </div>
+  <div class="card profuturo">
+    <span class="label">Profuturo</span>
+    <span class="valor">3.17%</span>
+  </div>
+  <div class="card eeuu">
+    <span class="label">EE.UU</span>
+    <span class="valor">10.36%</span>
+  </div>
+  <div class="card promedios">
+    <span class="label">Promedio AFPs</span>
+    <span class="valor">2.35%</span>
+  </div>
+</div>
+<div class="calc-container">
+  <h3>Simulador de Rentabilidad</h3>
+  
+  <label for="monto">Ingresa tu monto:</label>
+<input type="text" id="monto" inputmode="decimal" placeholder="Ingresa el monto">
+
+<select id="afp" title="Selecciona una AFP">
+  <option value="53.65" data-nombre="Habitat">Habitat</option>
+  <option value="22.42" data-nombre="Integra">Integra</option>
+  <option value="7.90" data-nombre="Prima">Prima</option>
+  <option value="45.83" data-nombre="Profuturo">Profuturo</option>
+</select>
+<button onclick="calcular()">Calcular</button>
+
+  <div id="resultados"></div>
+</div>
+</div>
+
+  <div class="kpis" id="kpis"></div>
+  <div class="disclaimer">
+    Fuente de rendimiento de AFPs: SBS
+Se ajustaron los valores cuota por la comisión por saldo de cada AFP y se convirtieron a dólares al tipo de cambio de venta SBS de cierre de cada mes.
+El comparable de inversión en EE.UU. está compuesto por 80% de acciones de las mejores empresas de EE.UU. (S&P 500, a través del ETF SPY); y 20% de los mejores bonos de EE.UU. (a través del ETF AGG). Considera una comisión anual de 0.99% (promedio de los fondos 3 de las cuatro AFPs).
+ Información a partir del 27/06/2013, fecha de inicio del fondo 3 de AFP Habitat, que es último fondo 3 creado en el mercado.
+  </div>
+</div>
+          </div>
+          
+        </section>
+        <!-- Footer -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Helpers de formateo
+const formatWithCommas = (n) =>
+  Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+const montoInput = document.getElementById('monto');
+
+// Al entrar: quitar comas para editar fácil
+montoInput.addEventListener('focus', () => {
+  montoInput.value = montoInput.value.replace(/,/g, '');
+});
+
+// Al salir: si es número, formatear con comas
+montoInput.addEventListener('blur', () => {
+  const raw = montoInput.value.replace(/,/g, '');
+  const num = Number(raw);
+  if (!isNaN(num) && raw !== '') {
+    // fija a 2 decimales si quieres: { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    montoInput.value = num.toLocaleString('en-US');
+  }
+});
+function calcular() {
+  // 👇 quitar comas antes de parsear
+  const rawMonto = document.getElementById("monto").value.replace(/,/g, '');
+  const monto = parseFloat(rawMonto);
+  const selectAfp = document.getElementById("afp");
+  const afp = parseFloat(selectAfp.value);
+  const nombreAfp = selectAfp.options[selectAfp.selectedIndex].dataset.nombre;
+  const eeuu = 270.22;
+
+  const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  if (isNaN(monto) || monto <= 0) {
+    document.getElementById("resultados").innerHTML = "<p style='color:red'>Por favor ingresa un monto válido.</p>";
+    return;
+  }
+
+  const resultadoAFP = monto * (1 + afp/100);
+  const resultadoEEUU = monto * (1 + eeuu/100);
+
+  document.getElementById("resultados").innerHTML = `
+    <p>Si hubieras invertido $${fmt(monto)} en junio del 2013 en ${nombreAfp}, hoy tendrías: <strong>$${fmt(resultadoAFP)}</strong></p>
+    <p>Mientras que si hubieras invertido en EE.UU, hoy tendrías: <strong>$${fmt(resultadoEEUU)}</strong></p>
+  `;
+}
+</script>
+<script>
+  let chart;
+
+async function loadData() {
+  const response = await fetch("fondo3_porcentajes.csv");
+  const text = await response.text();
+  const rows = text.trim().split("\n").map(r => r.split(","));
+  const dataRows = rows.slice(1);
+
+  return dataRows.map(r => {
+    const fecha = r[0].split(" ")[0];
+    return {
+      Fecha: fecha,
+      Habitat: parseFloat(r[1]),
+      Integra: parseFloat(r[2]),
+      Prima: parseFloat(r[3]),
+      Profuturo: parseFloat(r[4]),
+      Comparativo: parseFloat(r[5]),
+      Promedio: parseFloat(r[6])
+    };
+  });
+}
+
+async function renderChart() {
+  const data = await loadData();
+  const labels = data.map(d => {
+    const [y,m,dia] = d.Fecha.split("-");
+    return `${dia}/${m}/${y}`;
+  });
+
+  const ctx = document.getElementById("chart").getContext("2d");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+  { label: "Habitat", data: data.map(d => d.Habitat*100), borderColor: "#c02c39", hidden: true, yAxisID: "porcentaje" },
+  { label: "Integra", data: data.map(d => d.Integra*100), borderColor: "#1d49a7", hidden: true, yAxisID: "porcentaje" },
+  { label: "Prima", data: data.map(d => d.Prima*100), borderColor: "#f7cf2e", hidden: true, yAxisID: "porcentaje" },
+  { label: "Profuturo", data: data.map(d => d.Profuturo*100), borderColor: "#797166", hidden: true, yAxisID: "porcentaje" },
+  { label: "EE.UU", data: data.map(d => d.Comparativo*100), borderColor: "#7C9856", borderDash: [5,5], yAxisID: "porcentaje" },
+  { label: "Promedio AFPs", data: data.map(d => d.Promedio*100), borderColor: "#b05138", borderDash: [2,2], yAxisID: "porcentaje" }
+]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,  
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false }, // usamos checkboxes en lugar de legend
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${context.raw.toFixed(2)}%`
+          }
+        }
+      },
+      elements: {
+        line: { tension: 0.3, borderWidth: 2 },
+        point: { radius: 0 }
+      },
+      scales: {
+  porcentaje: {
+    type: "linear",
+    position: "left",
+    min: -20,
+    max: 300,
+    title: { 
+      display: true, 
+      text: "Variación (%)", 
+      font: { size: 16, weight: "bold" }, 
+      color: "#0f172a" 
+    },
+    ticks: { 
+      callback: v => v + "%", 
+      font: { size: 12 , weight: "bold"   }, 
+      color: "#0f172a",
+    },
+    grid: { display: false } 
+  },
+  x: {
+  ticks: {
+    autoSkip: true,   
+    maxTicksLimit: 8, 
+    font: { size: 11, weight: "bold" },
+    color: "#0f172a",
+     maxRotation: 0,
+  minRotation: 0,
+  callback: function(value, index) {
+  if (window.innerWidth < 400) {
+    return index % 2 === 0 ? this.getLabelForValue(value) : "";
+  }
+  if (window.innerWidth < 768) {
+    return index % 2 === 0 ? this.getLabelForValue(value) : "";
+  }
+  return this.getLabelForValue(value);
+}
+  }
+}
+}
+
+    }
+  });
+
+  // ✅ Manejador de checkboxes
+  document.querySelectorAll("#filtros input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const dataset = chart.data.datasets.find(ds => ds.label === cb.value);
+      dataset.hidden = !cb.checked;
+      chart.update();
+    });
+  });
+}
+
+renderChart();
+
+</script>
+</body>
+</html>
